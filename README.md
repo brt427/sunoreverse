@@ -1,6 +1,6 @@
 # sunoreverse
 
-reverse engineer any song into a suno ai prompt.
+reverse engineer any song into a suno ai prompt (site coming soon)
 
 ## what is this?
 
