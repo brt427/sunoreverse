@@ -4,22 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ArrowLeft, Copy, Check } from "lucide-react"
 import { useState } from "react"
-
-interface MusicAnalysis {
-  tempo: number
-  key: string
-  mode: string
-  energy: number
-  analysis: {
-    genre: string
-    mood: string
-    instrumentation: string
-    production: string
-    tempo_descriptor: string
-    vocal_style: string
-    prompt: string
-  }
-}
+import type { MusicAnalysis } from "@/lib/api"
 
 interface AnalysisResultsProps {
   analysis: MusicAnalysis
@@ -98,6 +83,20 @@ export function AnalysisResults({ analysis, onReset }: AnalysisResultsProps) {
         <div className="rounded-lg bg-muted/50 p-5">
           <p className="text-sm leading-relaxed text-foreground">{analysis.analysis.prompt.toLowerCase()}</p>
         </div>
+
+        {/* v3: Show sections if available */}
+        {analysis.analysis.sections && analysis.analysis.sections.length > 0 && (
+          <div className="mt-6 space-y-3">
+            <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">song structure</h3>
+            {analysis.analysis.sections.map((section, idx) => (
+              <div key={idx} className="rounded-lg border border-border bg-background/50 p-3">
+                <div className="text-xs font-medium text-primary">{section.name}</div>
+                <div className="mt-1 text-xs leading-relaxed text-muted-foreground">{section.description}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <p className="mt-4 text-center text-xs text-muted-foreground">
           use this prompt with suno, udio, or other ai music tools
         </p>

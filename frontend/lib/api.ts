@@ -12,7 +12,14 @@ export interface MusicAnalysis {
     production: string
     tempo_descriptor: string
     vocal_style: string
+    structure_tags: string
     prompt: string
+    // v3 specific fields (optional)
+    sections?: Array<{
+      name: string
+      description: string
+    }>
+    style_of_music?: string
   }
 }
 

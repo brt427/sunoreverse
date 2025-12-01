@@ -10,6 +10,20 @@ import google.generativeai as genai
 env_path = Path(__file__).parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
+# Prompt version to use (v1 or v2)
+PROMPT_VERSION = os.getenv("PROMPT_VERSION", "v2")
+
+
+def load_prompt(version="v2"):
+    """Load prompt from file"""
+    prompt_dir = Path(__file__).parent / "prompts"
+    prompt_file = prompt_dir / f"suno_{version}.txt"
+
+    if not prompt_file.exists():
+        raise FileNotFoundError(f"Prompt file not found: {prompt_file}")
+
+    return prompt_file.read_text()
+
 
 def configure_genai():
     """Sets up the Google Gemini SDK"""
@@ -56,47 +70,11 @@ def analyze_audio(audio_path):
 
         print("Analyzing Vibe...")
 
-        # 3. Initialize the Vibe Reader (Gemini 1.5 Flash is fastest/cheapest)
+        # 3. Initialize the Vibe Reader (Gemini 2.0 Flash is fastest/cheapest)
         model = genai.GenerativeModel("gemini-2.0-flash")
 
-        # 4. The "Suno-Optimized" Prompt
-        prompt = """
-        You are an expert music curator analyzing this audio for AI music generation.
-
-        Analyze this track and extract the following:
-        1. GENRE: Be hyper-specific. Include era (e.g., "1980s Synth Pop" not just "Pop"). Use sub-genres and fusion when relevant.
-        2. MOOD: Precise emotional descriptors (e.g., "melancholic", "euphoric", "gritty").
-        3. INSTRUMENTATION: List 2-3 core instruments with TIMBRAL ADJECTIVES (e.g., "distorted guitar" not "guitar", "felt piano" not "piano").
-        4. PRODUCTION: Describe the mix quality/texture (e.g., "lo-fi", "polished", "reverb-heavy", "compressed").
-        5. TEMPO_DESCRIPTOR: Use words like "slow", "mid-tempo", "fast-paced", "driving" (NOT numeric BPM).
-        6. VOCAL_STYLE: If vocals present, describe delivery (e.g., "raspy male vocals", "Auto-tuned female vocals", "choir harmonies"). If instrumental, say "Instrumental".
-        7. PROMPT: Combine all of the above into a single Suno-style prompt string using this format:
-           "[GENRE], [MOOD], [TEMPO_DESCRIPTOR], featuring [INSTRUMENTATION], [PRODUCTION], [VOCAL_STYLE]"
-
-        Output ONLY valid JSON in this exact format:
-        {
-          "genre": "string",
-          "mood": "string",
-          "instrumentation": "string",
-          "production": "string",
-          "tempo_descriptor": "string",
-          "vocal_style": "string",
-          "prompt": "string"
-        }
-
-        Example:
-        {
-          "genre": "1990s Trip Hop",
-          "mood": "dark and atmospheric",
-          "instrumentation": "dusty vinyl samples, muted trumpet, deep sub-bass",
-          "production": "lo-fi with vinyl crackle",
-          "tempo_descriptor": "slow downtempo",
-          "vocal_style": "breathy female vocals",
-          "prompt": "1990s Trip Hop, dark and atmospheric, slow downtempo, featuring dusty vinyl samples, muted trumpet, deep sub-bass, lo-fi with vinyl crackle, breathy female vocals"
-        }
-
-        Do NOT include numeric BPM or musical key. Output ONLY the JSON, no other text.
-        """
+        # 4. Load the Suno-Optimized Prompt
+        prompt = load_prompt(PROMPT_VERSION)
 
         # 5. Generate
         response = model.generate_content([prompt, audio_file])
@@ -114,6 +92,23 @@ def analyze_audio(audio_path):
         # Try to parse JSON
         try:
             analysis_data = json.loads(response_text)
+
+            # Normalize v3 format to match v1/v2 structure for backward compatibility
+            if PROMPT_VERSION == "v3" and "style_of_music" in analysis_data:
+                # v3 has different structure, create a compatible wrapper
+                return {
+                    "genre": analysis_data.get("style_of_music", ""),
+                    "mood": analysis_data.get("mood", ""),  # v3 now includes mood field
+                    "instrumentation": "",  # In sections
+                    "production": "",  # In sections
+                    "tempo_descriptor": "",  # In style_of_music
+                    "vocal_style": "",  # In sections
+                    "structure_tags": "",
+                    "prompt": analysis_data.get("combined_prompt", ""),
+                    "sections": analysis_data.get("sections", []),  # v3 specific
+                    "style_of_music": analysis_data.get("style_of_music", "")  # v3 specific
+                }
+
             return analysis_data
         except json.JSONDecodeError as json_err:
             # If JSON parsing fails, return raw text wrapped in dict

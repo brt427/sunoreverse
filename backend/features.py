@@ -24,6 +24,11 @@ def extract_features(file_path: str) -> dict:
     # Extract Gemini analysis
     analysis = analyze_audio(file_path)
 
+    # Append librosa BPM and key to the final prompt
+    if "prompt" in analysis:
+        key_mode = f"{key_info['key']} {key_info['mode']}"
+        analysis["prompt"] = f"{analysis['prompt']}, {key_mode}, {tempo} bpm"
+
     return {
         "tempo": tempo,
         "key": key_info['key'],
