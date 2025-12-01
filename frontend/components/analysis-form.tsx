@@ -7,64 +7,55 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Upload, Loader2 } from "lucide-react"
 import { AnalysisResults } from "@/components/analysis-results"
-
-interface MusicAnalysis {
-  tempo: number
-  key: string
-  mode: string
-  energy: number
-  analysis: {
-    genre: string
-    mood: string
-    instrumentation: string
-    production: string
-    tempo_descriptor: string
-    vocal_style: string
-    prompt: string
-  }
-}
+import { analyzeAudio, type MusicAnalysis } from "@/lib/api"
+import { validateAudioFile, sanitizeFilename } from "@/lib/file-validation"
 
 export function AnalysisForm() {
   const [file, setFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<MusicAnalysis | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(null) // Clear previous errors
+
     if (e.target.files?.[0]) {
-      setFile(e.target.files[0])
+      const selectedFile = e.target.files[0]
+
+      // Validate file
+      const validation = validateAudioFile(selectedFile)
+      if (!validation.valid) {
+        setError(validation.error || 'Invalid file')
+        setFile(null)
+        // Reset the input
+        e.target.value = ''
+        return
+      }
+
+      setFile(selectedFile)
     }
   }
 
   const handleAnalyze = async () => {
+    if (!file) return
+
     setIsAnalyzing(true)
+    setError(null)
 
-    // Simulate analysis (replace with actual API call)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    // Demo analysis result
-    setAnalysis({
-      tempo: 160,
-      key: "F",
-      mode: "minor",
-      energy: 0.87,
-      analysis: {
-        genre: "2010s Feel-Good Pop",
-        mood: "uplifting and joyful",
-        instrumentation: "acoustic guitar, bright keyboard, simple percussion",
-        production: "polished, clean mix",
-        tempo_descriptor: "upbeat",
-        vocal_style: "clean male vocals",
-        prompt:
-          "2010s Feel-Good Pop, uplifting and joyful, upbeat, featuring acoustic guitar, bright keyboard, simple percussion, polished, clean mix, clean male vocals",
-      },
-    })
-
-    setIsAnalyzing(false)
+    try {
+      const result = await analyzeAudio(file)
+      setAnalysis(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to analyze audio')
+    } finally {
+      setIsAnalyzing(false)
+    }
   }
 
   const handleReset = () => {
     setFile(null)
     setAnalysis(null)
+    setError(null)
   }
 
   if (analysis) {
@@ -91,11 +82,19 @@ export function AnalysisForm() {
               <Upload className="mb-4 h-12 w-12 text-muted-foreground" />
               <span className="text-base text-foreground">{file ? "song selected" : "drop your audio file"}</span>
               {file && (
-                <span className="mt-2 rounded-full bg-muted px-3 py-1 text-sm text-foreground">{file.name}</span>
+                <span className="mt-2 rounded-full bg-muted px-3 py-1 text-sm text-foreground">
+                  {sanitizeFilename(file.name)}
+                </span>
               )}
               {!file && <span className="mt-2 text-sm text-muted-foreground">or click to browse files</span>}
             </label>
           </div>
+
+          {error && (
+            <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
+              {error}
+            </div>
+          )}
 
           <Button
             onClick={handleAnalyze}
@@ -109,17 +108,14 @@ export function AnalysisForm() {
                 analyzing song
               </>
             ) : (
-              <>
-                <span className="mr-2">✨</span>
-                analyze song
-              </>
+              "analyze song"
             )}
           </Button>
         </div>
       </Card>
 
       <p className="text-center text-sm text-muted-foreground">
-        transform your songs into emotional insights and creative prompts
+        transform any song into a creative prompt
       </p>
     </div>
   )

@@ -30,7 +30,7 @@ export function AnalysisResults({ analysis, onReset }: AnalysisResultsProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(analysis.analysis.prompt)
+    navigator.clipboard.writeText(analysis.analysis.prompt.toLowerCase())
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -96,7 +96,7 @@ export function AnalysisResults({ analysis, onReset }: AnalysisResultsProps) {
           </Button>
         </div>
         <div className="rounded-lg bg-muted/50 p-5">
-          <p className="text-sm leading-relaxed text-foreground">{analysis.analysis.prompt}</p>
+          <p className="text-sm leading-relaxed text-foreground">{analysis.analysis.prompt.toLowerCase()}</p>
         </div>
         <p className="mt-4 text-center text-xs text-muted-foreground">
           use this prompt with suno, udio, or other ai music tools
