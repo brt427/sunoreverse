@@ -104,10 +104,27 @@ def analyze_audio(audio_path):
         # Cleanup: Delete the file from cloud storage to keep it clean
         audio_file.delete()
 
-        return response.text.strip()
+        # Parse JSON response
+        response_text = response.text.strip()
+
+        # Remove markdown code blocks if present
+        response_text = re.sub(r'^```json\s*', '', response_text)
+        response_text = re.sub(r'\s*```$', '', response_text)
+
+        # Try to parse JSON
+        try:
+            analysis_data = json.loads(response_text)
+            return analysis_data
+        except json.JSONDecodeError as json_err:
+            # If JSON parsing fails, return raw text wrapped in dict
+            print(f"Warning: Could not parse JSON response: {json_err}")
+            return {
+                "error": "JSON parsing failed",
+                "raw_response": response_text
+            }
 
     except Exception as e:
-        return f"Gemini Error: {str(e)}"
+        return {"error": f"Gemini Error: {str(e)}"}
 
 
 # Test Block
