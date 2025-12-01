@@ -12,7 +12,12 @@ writing good prompts for ai music generators is hard. this tool does it automati
 
 ## demo
 
-[screenshots here]
+<img src="demo/home.png" alt="Home Page Demo" width="800">
+home page: drag and drop any song
+
+<img src="demo/analysis.png" alt="Home Page Demo" width="800">
+get a detailed prompt + song analysis
+
 
 ## how it works
 
