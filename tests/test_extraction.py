@@ -37,9 +37,8 @@ def main():
         features = extract_features(audio_file)
 
         print("\nExtracted Features:")
-        print(f"  Tempo:  {features['tempo']} BPM")
-        print(f"  Key:    {features['key']} {features['mode']}")
-        print(f"  Energy: {features['energy']}")
+        print(f"  Tempo: {features['tempo']} BPM")
+        print(f"  Key:   {features['key']} {features['mode']}")
         print("-" * 50)
 
         # Interpret results
@@ -56,35 +55,12 @@ def main():
         else:
             print("  - Minor key")
 
-        # Display Gemini analysis
+        # Display Qwen2-Audio analysis
         if "analysis" in features:
             print("\n" + "=" * 50)
-            print("GEMINI ANALYSIS")
+            print("QWEN2-AUDIO ANALYSIS")
             print("=" * 50)
-
-            analysis = features['analysis']
-
-            # Check for errors
-            if isinstance(analysis, dict) and "error" in analysis:
-                print(f"ERROR: {analysis['error']}")
-                if "raw_response" in analysis:
-                    print(f"\nRaw Response:\n{analysis['raw_response']}")
-            elif isinstance(analysis, dict):
-                # Display structured fields
-                print(f"Genre:              {analysis.get('genre', 'N/A')}")
-                print(f"Mood:               {analysis.get('mood', 'N/A')}")
-                print(f"Instrumentation:    {analysis.get('instrumentation', 'N/A')}")
-                print(f"Production:         {analysis.get('production', 'N/A')}")
-                print(f"Tempo Descriptor:   {analysis.get('tempo_descriptor', 'N/A')}")
-                print(f"Vocal Style:        {analysis.get('vocal_style', 'N/A')}")
-                print("\n" + "-" * 50)
-                print("SUNO PROMPT:")
-                print("-" * 50)
-                print(analysis.get('prompt', 'N/A'))
-            else:
-                # Fallback for unexpected format
-                print(analysis)
-
+            print(features['analysis'])
             print("=" * 50)
 
     except Exception as e:
