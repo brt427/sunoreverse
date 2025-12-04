@@ -15,24 +15,56 @@ export function AnalysisForm() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<MusicAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileValidation = (selectedFile: File) => {
     setError(null) // Clear previous errors
 
+    // Validate file
+    const validation = validateAudioFile(selectedFile)
+    if (!validation.valid) {
+      setError(validation.error || 'Invalid file')
+      setFile(null)
+      return false
+    }
+
+    setFile(selectedFile)
+    return true
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
-      const selectedFile = e.target.files[0]
+      handleFileValidation(e.target.files[0])
+      // Reset the input
+      e.target.value = ''
+    }
+  }
 
-      // Validate file
-      const validation = validateAudioFile(selectedFile)
-      if (!validation.valid) {
-        setError(validation.error || 'Invalid file')
-        setFile(null)
-        // Reset the input
-        e.target.value = ''
-        return
-      }
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
 
-      setFile(selectedFile)
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    const droppedFiles = e.dataTransfer.files
+    if (droppedFiles.length > 0) {
+      handleFileValidation(droppedFiles[0])
     }
   }
 
@@ -77,16 +109,26 @@ export function AnalysisForm() {
             />
             <label
               htmlFor="file-upload"
-              className="flex h-48 cursor-pointer flex-col items-center justify-center rounded-xl border border-border bg-background/50 transition-all hover:bg-background"
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              className={`flex h-48 cursor-pointer flex-col items-center justify-center rounded-xl border transition-all ${
+                isDragging
+                  ? "border-primary bg-primary/10 border-2"
+                  : "border-border bg-background/50 hover:bg-background"
+              }`}
             >
-              <Upload className="mb-4 h-12 w-12 text-muted-foreground" />
-              <span className="text-base text-foreground">{file ? "song selected" : "drop your audio file"}</span>
+              <Upload className={`mb-4 h-12 w-12 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
+              <span className="text-base text-foreground">
+                {file ? "song selected" : isDragging ? "drop audio file here" : "drop your audio file"}
+              </span>
               {file && (
                 <span className="mt-2 rounded-full bg-muted px-3 py-1 text-sm text-foreground">
                   {sanitizeFilename(file.name)}
                 </span>
               )}
-              {!file && <span className="mt-2 text-sm text-muted-foreground">or click to browse files</span>}
+              {!file && !isDragging && <span className="mt-2 text-sm text-muted-foreground">or click to browse files</span>}
             </label>
           </div>
 
