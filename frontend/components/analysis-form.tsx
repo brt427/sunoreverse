@@ -105,7 +105,7 @@ export function AnalysisForm() {
           <div className="relative">
             <input
               type="file"
-              accept="audio/*"
+              accept="audio/*,.mp3,.wav,.flac,.ogg,.m4a,.aac"
               onChange={handleFileChange}
               className="hidden"
               id="file-upload"
