@@ -41,6 +41,11 @@ export async function analyzeAudio(file: File): Promise<MusicAnalysis> {
     })
 
     if (!response.ok) {
+      // Handle rate limit error specifically
+      if (response.status === 429) {
+        throw new Error('RATE_LIMIT_EXCEEDED')
+      }
+
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
       throw new Error(errorData.detail || `HTTP ${response.status}`)
     }

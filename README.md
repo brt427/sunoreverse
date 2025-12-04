@@ -1,6 +1,6 @@
 # sunoreverse
 
-reverse engineer any song into a suno ai prompt.
+reverse engineer any song into a suno ai prompt (site coming soon)
 
 ## what is this?
 
@@ -12,7 +12,12 @@ writing good prompts for ai music generators is hard. this tool does it automati
 
 ## demo
 
-[screenshots here]
+<img src="demo/home.png" alt="Home Page Demo" width="800"><br/>
+home page: drag and drop any song
+
+<img src="demo/analysis.png" alt="Home Page Demo" width="800">
+get a detailed prompt + song analysis
+
 
 ## how it works
 
@@ -136,21 +141,6 @@ energy, g# minor, 110 bpm
 - [bridge] - tempo slows, cleaner guitar tone, vocals more subdued
 - [outro] - guitar feedback, drums fade out, lingering distorted sound
 
-## deployment
-
-- backend: railway, fly.io, or render
-- frontend: vercel (recommended)
-
-see `docs/deployment_roadmap.md` for detailed deployment guide.
-
-## security
-
-before deploying to production:
-- add api key authentication
-- implement rate limiting (10-50 requests/day)
-- update cors to specific domain
-- see `docs/api_security.md` for details
-
 ## contributing
 
 this is a personal project, but feel free to fork and adapt for your own use.
@@ -164,4 +154,4 @@ mit
 - [suno ai](https://suno.com) for the inspiration
 - [librosa](https://librosa.org) for music analysis
 - [google gemini](https://ai.google.dev) for multimodal ai
-- reddit's r/sunoai community for prompt engineering insights
+- reddit's r/sunoAI community for prompt engineering insights

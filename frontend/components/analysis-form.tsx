@@ -78,7 +78,11 @@ export function AnalysisForm() {
       const result = await analyzeAudio(file)
       setAnalysis(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to analyze audio')
+      if (err instanceof Error && err.message === 'RATE_LIMIT_EXCEEDED') {
+        setError('Free Daily limit reached! You can analyze 8 songs per day. Come back tomorrow for more.')
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to analyze audio')
+      }
     } finally {
       setIsAnalyzing(false)
     }
