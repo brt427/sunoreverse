@@ -20,6 +20,8 @@ export interface MusicAnalysis {
       description: string
     }>
     style_of_music?: string
+    // Error field (when Gemini fails)
+    error?: string
   }
 }
 

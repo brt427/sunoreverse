@@ -76,12 +76,19 @@ export function AnalysisForm() {
 
     try {
       const result = await analyzeAudio(file)
+
+      // Check if backend returned an error or missing prompt
+      if (result.analysis?.error || !result.analysis?.prompt) {
+        setError('We\'re experiencing high traffic right now. Please try again later.')
+        return
+      }
+
       setAnalysis(result)
     } catch (err) {
       if (err instanceof Error && err.message === 'RATE_LIMIT_EXCEEDED') {
-        setError('Free Daily limit reached! You can analyze 8 songs per day. Come back tomorrow for more.')
+        setError('Daily limit reached! You can analyze 8 songs per day. Come back tomorrow for more.')
       } else {
-        setError(err instanceof Error ? err.message : 'Failed to analyze audio')
+        setError('We\'re experiencing high traffic right now. Please try again later.')
       }
     } finally {
       setIsAnalyzing(false)
